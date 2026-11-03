@@ -1,21 +1,49 @@
-# Instamilligram 📸
+# Instamilligram
 
-An Instagram-inspired social platform concept with username/password account access planned. Original brand and UI.
+An Instagram-inspired social web app prototype with a real username/password backend.
 
-## Current prototype
-- Responsive dark/light UI
-- Feed with sample posts, likes, comments
-- Stories strip
-- Explore/Reels visual grid
-- Username search and follow interaction
-- Create post (image URL)
-- Mobile navigation
+**Live site:** https://kushalthedeveloper.github.io/instamilligram/  
+**Repository:** https://github.com/kushalthedeveloper/instamilligram
 
-## Development status
-This repository currently contains a front-end prototype. Real multi-user authentication, database persistence, media uploads, private messaging, stories expiry, and deployment need backend integration before production use.
+## Implemented
 
-## Security plan
-Username/password auth must be implemented server-side with Argon2id or bcrypt password hashing, rate-limited login, secure HttpOnly session cookies, CSRF protections, and recovery codes. Never store plaintext passwords or authentication secrets in the browser. Username-only signup means users must save a recovery code; there is no email reset.
+- Username + password signup and login — no email or phone number required
+- Passwords hashed with bcrypt (cost 12); raw passwords are never stored
+- Opaque random sessions; only a SHA-256 hash of each session token is stored
+- Login and signup rate limits
+- Private profiles by default, with follow requests and approval
+- Persistent posts (HTTPS image URL + caption), likes, comments and profile edits
+- User search, report submission and block controls in the backend
+- Row Level Security enabled on all application tables; direct browser access is revoked
+- Supabase secret key is only used inside the Edge Function, never shipped to the browser
 
-## Run locally
-Serve the static files with any local web server, e.g. `python -m http.server 8000`, then visit `http://localhost:8000`.
+## Free-tier architecture
+
+- Static frontend: GitHub Pages
+- Database and API: Supabase project in Mumbai (ap-south-1)
+- Backend function: instamilligram-api
+
+The Supabase project was quoted at $0/month when created. Free-tier quotas and availability can change; usage beyond included limits may require a paid plan. Do not enable paid upgrades without reviewing their price.
+
+## Account notes
+
+- Usernames are 3–24 lowercase letters, numbers or underscores.
+- Passwords must be at least 10 characters and no more than 72 UTF-8 bytes.
+- Keep your password private and use one that you do not use on other websites.
+- Profiles start private. Approve follow requests before followers can see private posts.
+- Because signup intentionally collects no email or phone, there is no email/phone-based password reset. If you forget your password, account recovery is not currently available.
+- Session tokens are kept in the current browser tab's session storage and expire on the server after 30 days.
+
+## Current limitations
+
+This is an early MVP, not a full Instagram replacement. Direct photo uploads, stories, reels, private messaging, push notifications, account recovery, and a moderation dashboard are not implemented. Posts currently accept an HTTPS image URL. Report submission and blocking endpoints exist, but there is not yet a staffed moderation workflow.
+
+## Security design
+
+The public frontend uses only the Supabase publishable key. The backend function uses Supabase's server-side secret from its environment. Application tables have RLS enabled and no browser-facing policies; requests go through the API function. Never put a Supabase secret/service-role key in this repository or browser code.
+
+## Main files
+
+- index.html — app shell and auth screen
+- styles.css — responsive UI
+- app.js — frontend and API integration
