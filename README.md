@@ -36,7 +36,7 @@ The Supabase project was quoted at $0/month when created. Free-tier quotas and a
 
 ## Current limitations
 
-This is an early MVP, not a full Instagram replacement. Direct photo uploads, stories, reels, private messaging, push notifications, and a moderation dashboard are not implemented. Password-recovery flows are built, but delivery is inactive until provider secrets are configured. Posts currently accept an HTTPS image URL. Report submission and blocking endpoints exist, but there is not yet a staffed moderation workflow.
+This is an early MVP, not a full Instagram replacement. Direct photo uploads, stories, reels, push notifications, and a moderation dashboard are not implemented. Text-only direct messaging is available between mutually accepted followers; message attachments and real-time push delivery are not included. Password-recovery flows are built, but delivery is inactive until provider secrets are configured. Posts currently accept an HTTPS image URL. Report submission and blocking endpoints exist, but there is not yet a staffed moderation workflow.
 
 ## Security design
 
@@ -61,4 +61,4 @@ The recovery API is deployed, but message delivery needs provider credentials co
 
 Until the required secrets are configured, users cannot receive recovery codes. No API keys or provider secrets belong in this public GitHub repository or browser code. Recovery codes expire after 10 minutes, allow at most five verification attempts, and successful password resets revoke all active sessions.
 
-The current release still uses image URLs rather than direct uploads. Messages, stories, reels, account deletion, and a full moderation dashboard remain future work.
+The current release still uses image URLs rather than direct uploads. Stories, reels, account deletion, and a full moderation dashboard remain future work. Direct messages are text-only and require both accounts to follow each other; message sending is rate-limited.
