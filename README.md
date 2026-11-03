@@ -31,12 +31,12 @@ The Supabase project was quoted at $0/month when created. Free-tier quotas and a
 - Passwords must be at least 10 characters and no more than 72 UTF-8 bytes.
 - Keep your password private and use one that you do not use on other websites.
 - Profiles start private. Approve follow requests before followers can see private posts.
-- Because signup intentionally collects no email or phone, there is no email/phone-based password reset. If you forget your password, account recovery is not currently available.
+- Signup and login use username + password only. A verified email address or mobile number can be added later from Profile → Account recovery for password resets.
 - Session tokens are kept in the current browser tab's session storage and expire on the server after 30 days.
 
 ## Current limitations
 
-This is an early MVP, not a full Instagram replacement. Direct photo uploads, stories, reels, private messaging, push notifications, account recovery, and a moderation dashboard are not implemented. Posts currently accept an HTTPS image URL. Report submission and blocking endpoints exist, but there is not yet a staffed moderation workflow.
+This is an early MVP, not a full Instagram replacement. Direct photo uploads, stories, reels, private messaging, push notifications, and a moderation dashboard are not implemented. Password-recovery flows are built, but delivery is inactive until provider secrets are configured. Posts currently accept an HTTPS image URL. Report submission and blocking endpoints exist, but there is not yet a staffed moderation workflow.
 
 ## Security design
 
