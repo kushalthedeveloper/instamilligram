@@ -96,11 +96,28 @@ function modal(title,html) { $("#modalTitle").textContent=title; $("#modalBody")
 $("#closeModal").onclick=()=>$("#modal").classList.add("hidden");
 $("#modal").onclick=e=>{if(e.target.id==="modal")$("#modal").classList.add("hidden");};
 function createModal() {
-  modal("Create a post",'<p class="muted">For now, add a public HTTPS image link. Direct photo uploads are not enabled yet.</p><label class="field-label">Image URL<input class="field" id="postUrl" type="url" placeholder="https://example.com/photo.jpg"></label><label class="field-label">Caption<textarea class="field" id="postCaption" maxlength="2200" rows="4" placeholder="Write a caption…"></textarea></label><p id="createError" class="auth-error"></p><button class="primary" id="publish">Share post</button>');
+  modal("Create a post",'<p class="muted">Upload a JPEG, PNG, or WebP image (up to 4 MB), or paste an HTTPS image link.</p><label class="field-label">Choose image<input class="field" id="postFile" type="file" accept="image/jpeg,image/png,image/webp"></label><label class="field-label">Or image URL<input class="field" id="postUrl" type="url" placeholder="https://example.com/photo.jpg"></label><label class="field-label">Caption<textarea class="field" id="postCaption" maxlength="2200" rows="4" placeholder="Write a caption…"></textarea></label><p id="createError" class="auth-error"></p><button class="primary" id="publish">Share post</button>');
   $("#publish").onclick=async()=>{
     const btn=$("#publish"); btn.disabled=true;
+    $("#createError").textContent="";
     try {
-      await api("create_post",{image_url:$("#postUrl").value.trim(),caption:$("#postCaption").value.trim()});
+      const file=$("#postFile").files[0];
+      let imageUrl=$("#postUrl").value.trim();
+      if(file) {
+        if(file.size>4*1024*1024) throw new Error("Image must be 4 MB or smaller.");
+        if(!["image/jpeg","image/png","image/webp"].includes(file.type)) throw new Error("Choose a JPEG, PNG, or WebP image.");
+        const dataUrl=await new Promise((resolve,reject)=>{
+          const reader=new FileReader();
+          reader.onload=()=>resolve(reader.result);
+          reader.onerror=()=>reject(new Error("Could not read this image."));
+          reader.readAsDataURL(file);
+        });
+        const base64=String(dataUrl).split(",")[1];
+        const uploaded=await api("upload_post_image",{mime_type:file.type,data_base64:base64});
+        imageUrl=uploaded.image_url;
+      }
+      if(!imageUrl) throw new Error("Choose an image or paste an HTTPS image URL.");
+      await api("create_post",{image_url:imageUrl,caption:$("#postCaption").value.trim()});
       $("#modal").classList.add("hidden"); toast("Post shared."); await loadFeed();
     } catch(err) { $("#createError").textContent=err.message; }
     finally { btn.disabled=false; }
