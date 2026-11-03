@@ -32,3 +32,26 @@
 .privacy-toggle input{accent-color:#a13cff;width:17px;height:17px}
 .secondary{width:100%;padding:12px;border:1px solid var(--line);border-radius:10px;margin-top:10px}
 .field-label .field{display:block;margin-top:8px}
+
+/* Direct messages */
+.messages-head{display:flex;align-items:center;justify-content:space-between;gap:14px;margin:8px 0 18px}
+.messages-head h2{margin:0 0 5px}.messages-head p{margin:0}
+.messages-head .secondary{width:auto;margin:0;padding:9px 14px}
+.message-inbox{border:1px solid var(--line);border-radius:14px;overflow:hidden;background:var(--panel)}
+.conversation-row{display:flex;align-items:center;gap:12px;width:100%;padding:14px;text-align:left;border-bottom:1px solid var(--line)}
+.conversation-row:last-child{border-bottom:0}.conversation-row:hover{background:#ffffff08}
+.conversation-copy{min-width:0;display:grid;gap:5px}.conversation-copy small{color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:380px}
+.unread-dot{width:9px;height:9px;border-radius:50%;background:#b65cff;margin-left:auto}
+.message-panel{margin-top:18px;border:1px solid var(--line);border-radius:14px;background:var(--panel);overflow:hidden}
+.thread-head{display:flex;align-items:center;gap:18px;padding:14px;border-bottom:1px solid var(--line)}
+.thread-messages{height:340px;overflow:auto;padding:16px;display:flex;flex-direction:column;gap:10px}
+.message-bubble{max-width:min(78%,440px);padding:10px 13px;border-radius:15px;line-height:1.45;overflow-wrap:anywhere}
+.message-bubble small{display:block;font-size:10px;opacity:.65;margin-top:5px}
+.message-bubble.mine{align-self:flex-end;background:#6331a5}
+.message-bubble.theirs{align-self:flex-start;background:#272631}
+.thread-empty{text-align:center;margin:auto}
+.send-message-form{display:flex;gap:9px;padding:12px;border-top:1px solid var(--line)}
+.send-message-form input{min-width:0;flex:1;border:1px solid var(--line);border-radius:10px;padding:12px;background:transparent;color:var(--text)}
+.send-message-form .primary{width:auto;margin:0;padding:0 18px}
+.message-panel>.small-note{padding:0 14px 12px}
+@media(max-width:650px){.thread-messages{height:48vh}.conversation-copy small{max-width:65vw}}
