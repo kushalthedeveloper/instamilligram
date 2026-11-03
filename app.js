@@ -144,6 +144,25 @@ document.addEventListener("click",async e=>{
     try {const r=await api("follow",{user_id:follow.dataset.id});follow.textContent=r.status==="pending"?"Requested":"Following";toast(r.status==="pending"?"Follow request sent.":"Following.");}
     catch(err){toast(err.message);follow.disabled=false;}
   }
+  const block=e.target.closest(".block-user");
+  if(block) {
+    if(!confirm("Block this account? They will no longer be able to follow or message you.")) return;
+    block.disabled=true;
+    try { await api("block",{user_id:block.dataset.id}); block.closest(".suggestion")?.remove(); toast("Account blocked."); }
+    catch(err){toast(err.message);block.disabled=false;}
+  }
+  const unblock=e.target.closest(".unblock-user");
+  if(unblock) {
+    unblock.disabled=true;
+    try { await api("unblock",{user_id:unblock.dataset.id}); unblock.closest(".blocked-row")?.remove(); toast("Account unblocked."); }
+    catch(err){toast(err.message);unblock.disabled=false;}
+  }
+  const reportUser=e.target.closest(".report-user");
+  if(reportUser) {
+    const reason=prompt("Why are you reporting this account?");
+    if(reason) try { await api("report",{target_user_id:reportUser.dataset.id,reason}); toast("Account report submitted."); }
+    catch(err){toast(err.message);}
+  }
   const approve=e.target.closest(".approve-follow");
   if(approve) {
     try {await api("approve_follow",{user_id:approve.dataset.id});approve.closest(".request-row").remove();toast("Follow request approved.");}
@@ -208,7 +227,7 @@ async function showSearch() {
     const q=input.value.trim(); if(q.length<2){$("#searchResults").innerHTML="";return;}
     try {
       const data=await api("search_users",{query:q});
-      $("#searchResults").innerHTML=(data.users||[]).map(u=>'<div class="suggestion"><div class="avatar">'+esc((u.display_name||u.username).slice(0,1).toUpperCase())+'</div><div><b>'+esc(u.username)+'</b><small>'+esc(u.display_name||"")+(u.is_private?" · Private":"")+'</small></div><button class="link follow-user" data-id="'+esc(u.id)+'">Follow</button><button class="link message-user" data-id="'+esc(u.id)+'" data-name="'+esc(u.username)+'">Message</button></div>').join("")||'<p class="muted">No matching accounts.</p>';
+      $("#searchResults").innerHTML=(data.users||[]).map(u=>'<div class="suggestion"><div class="avatar">'+esc((u.display_name||u.username).slice(0,1).toUpperCase())+'</div><div><b>'+esc(u.username)+'</b><small>'+esc(u.display_name||"")+(u.is_private?" · Private":"")+'</small></div><button class="link follow-user" data-id="'+esc(u.id)+'">Follow</button><button class="link message-user" data-id="'+esc(u.id)+'" data-name="'+esc(u.username)+'">Message</button><button class="link block-user" data-id="'+esc(u.id)+'">Block</button><button class="link report-user" data-id="'+esc(u.id)+'">Report</button></div>').join("")||'<p class="muted">No matching accounts.</p>';
     }catch(err){$("#searchResults").innerHTML='<p class="muted">'+esc(err.message)+'</p>';}
   };
 }
@@ -220,7 +239,11 @@ async function showRequests() {
   }catch(err){$("#requestList").textContent=err.message;}
 }
 async function showProfile() {
-  modal("Your profile & security",'<div class="profile-edit"><p><b>@'+esc(currentUser.username)+'</b></p><label class="field-label">Display name<input id="profileName" class="field" maxlength="40" value="'+esc(currentUser.display_name||"")+'"></label><label class="field-label">Bio<textarea id="profileBio" class="field" maxlength="160" rows="3">'+esc(currentUser.bio||"")+'</textarea></label><label class="privacy-toggle"><input type="checkbox" id="privateProfile" '+(currentUser.is_private?"checked":"")+'> Private account (recommended)</label><p class="muted small-note">Only approved followers can see your private posts.</p><button id="saveProfile" class="primary">Save profile</button><hr><h3>Account recovery</h3><p id="recoveryStatus" class="muted">Checking recovery method…</p><label class="field-label">Recovery method<select id="recoveryMethod" class="field"><option value="email">Email address</option><option value="phone">Mobile number</option></select></label><label class="field-label">Email or mobile number<input id="recoveryContact" class="field" autocomplete="off" placeholder="name@example.com or +919876543210"></label><button id="sendRecoveryCode" class="secondary">Send verification code</button><div id="recoveryVerifyWrap" class="hidden"><label class="field-label">6-digit verification code<input id="recoveryCode" class="field" inputmode="numeric" maxlength="6" autocomplete="one-time-code"></label><button id="verifyRecoveryCode" class="primary">Verify and save recovery method</button></div><p id="recoveryError" class="auth-error" role="alert"></p><p class="muted small-note">A verified email or phone can be used to reset your password. No OTP is required to sign up or log in. Enter contact details only inside this secure account screen.</p><button id="logoutInProfile" class="secondary">Log out</button></div>');
+  modal("Your profile & security",'<div class="profile-edit"><p><b>@'+esc(currentUser.username)+'</b></p><label class="field-label">Display name<input id="profileName" class="field" maxlength="40" value="'+esc(currentUser.display_name||"")+'"></label><label class="field-label">Bio<textarea id="profileBio" class="field" maxlength="160" rows="3">'+esc(currentUser.bio||"")+'</textarea></label><label class="privacy-toggle"><input type="checkbox" id="privateProfile" '+(currentUser.is_private?"checked":"")+'> Private account (recommended)</label><p class="muted small-note">Only approved followers can see your private posts.</p><button id="saveProfile" class="primary">Save profile</button><hr><h3>Blocked accounts</h3><div id="blockedAccounts" class="blocked-list"><p class="muted">Loading…</p></div><hr><h3>Account recovery</h3><p id="recoveryStatus" class="muted">Checking recovery method…</p><label class="field-label">Recovery method<select id="recoveryMethod" class="field"><option value="email">Email address</option><option value="phone">Mobile number</option></select></label><label class="field-label">Email or mobile number<input id="recoveryContact" class="field" autocomplete="off" placeholder="name@example.com or +919876543210"></label><button id="sendRecoveryCode" class="secondary">Send verification code</button><div id="recoveryVerifyWrap" class="hidden"><label class="field-label">6-digit verification code<input id="recoveryCode" class="field" inputmode="numeric" maxlength="6" autocomplete="one-time-code"></label><button id="verifyRecoveryCode" class="primary">Verify and save recovery method</button></div><p id="recoveryError" class="auth-error" role="alert"></p><p class="muted small-note">A verified email or phone can be used to reset your password. No OTP is required to sign up or log in. Enter contact details only inside this secure account screen.</p><button id="logoutInProfile" class="secondary">Log out</button></div>');
+  try {
+    const blocked=await api("blocked_users");
+    $("#blockedAccounts").innerHTML=(blocked.users||[]).map(u=>'<div class="blocked-row"><span>@'+esc(u.username)+'</span><button class="link unblock-user" data-id="'+esc(u.id)+'">Unblock</button></div>').join("")||'<p class="muted small-note">You have not blocked any accounts.</p>';
+  } catch(err) { $("#blockedAccounts").textContent=err.message; }
   try {
     const r=await api("get_recovery_status");
     $("#recoveryStatus").textContent=r.recovery?(r.recovery.method==="email"?"Verified email: ":"Verified phone: ")+r.recovery.masked:"No verified recovery method saved.";
