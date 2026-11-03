@@ -141,6 +141,47 @@ document.addEventListener("submit",async e=>{
     catch(err){toast(err.message);}finally{btn.disabled=false;}
   }
 });
+
+async function showMessages() {
+  $("#feed").innerHTML='<div class="messages-head"><div><h2>Messages</h2><p class="muted">Private text chats with mutual followers.</p></div><button class="secondary" id="refreshMessages">Refresh</button></div><div id="messageInbox" class="message-inbox">Loading conversations…</div><div id="messagePanel" class="message-panel hidden"></div>';
+  $("#refreshMessages").onclick=showMessages;
+  try {
+    const data=await api("inbox");
+    const rows=data.conversations||[];
+    $("#messageInbox").innerHTML=rows.map(c=>'<button class="conversation-row open-conversation" data-id="'+esc(c.user_id)+'" data-name="'+esc(c.user.username||"member")+'">'+avatar(c.user)+'<span class="conversation-copy"><b>'+esc(c.user.username||"member")+'</b><small>'+esc(c.last_message||"Start a conversation")+'</small></span>'+(c.unread?'<span class="unread-dot" aria-label="Unread"></span>':'')+'</button>').join("")||'<div class="empty-state"><h3>No conversations yet</h3><p>Search for someone you know. Messaging unlocks only after you both follow each other.</p><button class="primary" id="findChatPeople">Find people</button></div>';
+    $("#findChatPeople")?.addEventListener("click",showSearch);
+  } catch(err) { $("#messageInbox").textContent=err.message; }
+}
+async function openMessageThread(userId, username) {
+  const panel=$("#messagePanel");
+  panel.classList.remove("hidden");
+  panel.dataset.userId=userId; panel.dataset.username=username;
+  panel.innerHTML='<div class="thread-head"><button class="link" id="backToInbox">← Inbox</button><b>@'+esc(username)+'</b></div><div class="thread-messages" id="threadMessages">Loading…</div><form id="sendMessageForm" class="send-message-form"><input name="message" maxlength="1000" placeholder="Write a message…" autocomplete="off" required><button class="primary" type="submit">Send</button></form><p class="muted small-note">Text-only. You can message only after you both follow each other.</p>';
+  $("#backToInbox").onclick=()=>panel.classList.add("hidden");
+  try {
+    const data=await api("message_thread",{user_id:userId});
+    $("#threadMessages").innerHTML=(data.messages||[]).map(m=>'<div class="message-bubble '+(m.sender_id===currentUser.id?"mine":"theirs")+'">'+esc(m.body)+'<small>'+new Date(m.created_at).toLocaleString()+'</small></div>').join("")||'<p class="muted thread-empty">No messages yet. Messaging unlocks after mutual follow.</p>';
+    $("#threadMessages").scrollTop=$("#threadMessages").scrollHeight;
+  } catch(err) { $("#threadMessages").textContent=err.message; }
+}
+document.addEventListener("click",e=>{
+  const open=e.target.closest(".open-conversation");
+  if(open) openMessageThread(open.dataset.id,open.dataset.name);
+});
+document.addEventListener("submit",async e=>{
+  if(!e.target.matches("#sendMessageForm")) return;
+  e.preventDefault();
+  const form=e.target, input=form.elements.message, body=input.value.trim();
+  if(!body) return;
+  const btn=form.querySelector("button"); btn.disabled=true;
+  try {
+    await api("send_message",{user_id:$("#messagePanel").dataset.userId,body});
+    input.value="";
+    await openMessageThread($("#messagePanel").dataset.userId,$("#messagePanel").dataset.username);
+    toast("Message sent.");
+  } catch(err) { toast(err.message); }
+  finally { btn.disabled=false; }
+});
 async function showSearch() {
   $("#feed").innerHTML='<h2>Find people</h2><input class="search-box" id="searchInput" placeholder="Search usernames…"><div id="searchResults"></div>';
   const input=$("#searchInput"); input.focus();
@@ -192,7 +233,7 @@ $("#nav").addEventListener("click",async e=>{
   if(page==="profile"){showProfile();return;}
   if(page==="notifications"){await showRequests();return;}
   if(page==="explore"){$("#feed").innerHTML='<section class="empty-state"><h2>Explore</h2><p>Search for usernames to discover accounts and request to follow them.</p><button class="primary" id="exploreSearch">Search people</button></section>';$("#exploreSearch").onclick=showSearch;return;}
-  if(page==="messages"){$("#feed").innerHTML='<section class="empty-state"><h2>Messages</h2><p>Private messaging is not included in this first release.</p></section>';return;}
+  if(page==="messages"){await showMessages();return;}
 });
 $("#mobileCreate").onclick=createModal;
 $("#themeBtn").onclick=()=>{document.body.classList.toggle("light");toast("Theme updated.");};
