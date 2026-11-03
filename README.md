@@ -47,3 +47,18 @@ The public frontend uses only the Supabase publishable key. The backend function
 - index.html — app shell and auth screen
 - styles.css — responsive UI
 - app.js — frontend and API integration
+
+
+## Account recovery setup
+
+The app supports either a verified email address or a verified mobile number for password recovery. Users add the contact from **Profile → Account recovery**, then verify a one-time code. Signup and normal login do not request contact details or OTP.
+
+The recovery API is deployed, but message delivery needs provider credentials configured in **Supabase Dashboard → Edge Functions → Secrets**:
+
+- Required: `RECOVERY_CODE_PEPPER` — a long random secret used to hash recovery codes.
+- Email: `RESEND_API_KEY` and `RESEND_FROM_EMAIL` (the sender address must belong to a domain verified with Resend).
+- Optional SMS: `TWILIO_ACCOUNT_SID`, `TWILIO_AUTH_TOKEN`, and `TWILIO_FROM_NUMBER`. SMS delivery may incur provider charges; do not configure it unless the owner has reviewed the price and approved it.
+
+Until the required secrets are configured, users cannot receive recovery codes. No API keys or provider secrets belong in this public GitHub repository or browser code. Recovery codes expire after 10 minutes, allow at most five verification attempts, and successful password resets revoke all active sessions.
+
+The current release still uses image URLs rather than direct uploads. Messages, stories, reels, account deletion, and a full moderation dashboard remain future work.
