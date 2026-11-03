@@ -55,3 +55,6 @@
 .send-message-form .primary{width:auto;margin:0;padding:0 18px}
 .message-panel>.small-note{padding:0 14px 12px}
 @media(max-width:650px){.thread-messages{height:48vh}.conversation-copy small{max-width:65vw}}
+
+/* Upload control */
+input[type="file"].field{padding:10px;font-size:12px}
