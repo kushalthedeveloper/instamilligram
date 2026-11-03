@@ -1,9 +1,50 @@
 <!doctype html>
-<html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#0b0b0f"><meta name="description" content="Instamilligram — share moments, find your people."><title>Instamilligram</title><link rel="stylesheet" href="styles.css"></head>
-<body><div class="app">
-<aside class="sidebar"><a class="brand" href="#" aria-label="Instamilligram home"><span class="brand-mark">im</span><span>instamilligram</span></a><nav id="nav"><button class="nav-item active" data-page="home"><span>⌂</span>Home</button><button class="nav-item" data-page="search"><span>⌕</span>Search</button><button class="nav-item" data-page="explore"><span>▦</span>Explore</button><button class="nav-item" data-page="reels"><span>▷</span>Reels</button><button class="nav-item" data-page="messages"><span>✉</span>Messages</button><button class="nav-item" data-page="notifications"><span>♡</span>Notifications</button><button class="nav-item" data-page="create"><span>⊕</span>Create</button><button class="nav-item" data-page="profile"><span>◉</span>Profile</button></nav><button class="nav-item bottom" id="themeBtn"><span>◐</span>Toggle theme</button></aside>
-<main class="main"><header class="mobile-head"><span class="brand-mark">im</span><b>instamilligram</b><button id="mobileCreate">⊕</button></header>
-<section class="feed-layout"><div class="feed-column"><div class="stories" id="stories"></div><div id="feed"></div></div><aside class="right-panel"><div class="user-mini"><div class="avatar gradient">K</div><div><b>kushalthedeveloper</b><small>Welcome to Instamilligram</small></div><button class="link" id="switchAccount">Switch</button></div><div class="suggest-title">Suggested for you <b>See all</b></div><div id="suggestions"></div><footer>About · Help · Press · API · Privacy · Terms<br>© 2026 INSTAMILLIGRAM</footer></aside></section>
-</main></div>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#0b0b0f">
+<meta name="description" content="Instamilligram — share moments, find your people.">
+<title>Instamilligram</title><link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<section id="authScreen" class="auth-screen">
+  <div class="auth-card">
+    <div class="auth-brand"><span class="brand-mark">im</span><span>instamilligram</span></div>
+    <p class="auth-tagline">A place for your moments.</p>
+    <div class="auth-tabs"><button id="loginTab" class="auth-tab active">Log in</button><button id="signupTab" class="auth-tab">Sign up</button></div>
+    <form id="authForm" autocomplete="on">
+      <label class="auth-label">Username<input id="authUsername" name="username" minlength="3" maxlength="24" pattern="[a-zA-Z0-9_]+" placeholder="your_username" autocomplete="username" required></label>
+      <label id="displayNameWrap" class="auth-label hidden">Display name<input id="authDisplayName" name="display_name" maxlength="40" placeholder="How should we call you?" autocomplete="nickname"></label>
+      <label class="auth-label">Password<input id="authPassword" name="password" type="password" minlength="10" maxlength="72" placeholder="At least 10 characters" autocomplete="current-password" required></label>
+      <p id="authHint" class="auth-hint">Log in with your username and password. No email or phone required.</p>
+      <p id="authError" class="auth-error" role="alert"></p>
+      <button id="authSubmit" class="primary" type="submit">Log in</button>
+    </form>
+    <p class="auth-footnote">Use a unique password. Your profile starts private. Never share your password or personal contact details.</p>
+  </div>
+</section>
+<div class="app hidden" id="mainApp">
+<aside class="sidebar">
+  <a class="brand" href="#" aria-label="Instamilligram home"><span class="brand-mark">im</span><span>instamilligram</span></a>
+  <nav id="nav">
+    <button class="nav-item active" data-page="home"><span>⌂</span>Home</button>
+    <button class="nav-item" data-page="search"><span>⌕</span>Search</button>
+    <button class="nav-item" data-page="explore"><span>▦</span>Explore</button>
+    <button class="nav-item" data-page="messages"><span>✉</span>Messages</button>
+    <button class="nav-item" data-page="notifications"><span>♡</span>Follow requests</button>
+    <button class="nav-item" data-page="create"><span>⊕</span>Create</button>
+    <button class="nav-item" data-page="profile"><span>◉</span>Profile</button>
+  </nav>
+  <button class="nav-item bottom" id="themeBtn"><span>◐</span>Toggle theme</button>
+</aside>
+<main class="main">
+  <header class="mobile-head"><span class="brand-mark">im</span><b>instamilligram</b><button id="mobileCreate">⊕</button></header>
+  <section class="feed-layout"><div class="feed-column"><div class="stories" id="stories"></div><div id="feed"></div></div>
+    <aside class="right-panel"><div class="user-mini" id="currentUserMini"></div><div class="suggest-title">Discover people <b>Search</b></div><div id="suggestions"></div><footer>About · Help · Privacy · Terms<br>© 2026 INSTAMILLIGRAM</footer></aside>
+  </section>
+</main>
+</div>
 <div class="modal-wrap hidden" id="modal"><div class="modal"><button class="close" id="closeModal">×</button><h2 id="modalTitle">Create post</h2><div id="modalBody"></div></div></div>
-<div class="toast" id="toast"></div><script src="app.js"></script></body></html>
+<div class="toast" id="toast" role="status"></div>
+<script src="app.js"></script>
+</body></html>
