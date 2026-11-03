@@ -13,7 +13,7 @@ An Instagram-inspired social web app prototype with a real username/password bac
 - Login and signup rate limits
 - Private profiles by default, with follow requests and approval
 - Persistent posts (private image upload or HTTPS image URL + caption), likes, comments and profile edits
-- User search, report submission and block controls in the backend
+- User search, account/post reporting, and block/unblock controls in the interface and backend
 - Row Level Security enabled on all application tables; direct browser access is revoked
 - Supabase secret key is only used inside the Edge Function, never shipped to the browser
 
