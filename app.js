@@ -29,7 +29,8 @@ function setAuthMode(mode) {
   $("#authSubmit").textContent=mode==="login"?"Log in":"Create account";
   $("#authError").textContent="";
 }
-$("#loginTab").onclick=()=>setAuthMode("login");\n$("#forgotPassword").onclick=showPasswordRecovery;
+$("#loginTab").onclick=()=>setAuthMode("login");
+$("#forgotPassword").onclick=showPasswordRecovery;
 $("#signupTab").onclick=()=>setAuthMode("signup");
 $("#authForm").addEventListener("submit",async e=>{
   e.preventDefault();
@@ -50,7 +51,8 @@ function showPasswordRecovery() {
   $("#requestResetCode").onclick=async()=>{try{await api("request_password_reset",{username:$("#resetUsername").value.trim()});$("#resetFields").classList.remove("hidden");$("#resetError").textContent="If the account has a verified recovery method and delivery is configured, a code will arrive shortly.";}catch(err){$("#resetError").textContent=err.message;}};
   $("#confirmPasswordReset").onclick=async()=>{try{await api("reset_password",{username:$("#resetUsername").value.trim(),code:$("#resetCode").value.trim(),new_password:$("#resetNewPassword").value});$("#modal").classList.add("hidden");toast("Password updated. Log in with your new password.");}catch(err){$("#resetError").textContent=err.message;}};
 }
-\nfunction showAuth() { $("#authScreen").classList.remove("hidden"); $("#mainApp").classList.add("hidden"); }
+
+function showAuth() { $("#authScreen").classList.remove("hidden"); $("#mainApp").classList.add("hidden"); }
 function showApp() { $("#authScreen").classList.add("hidden"); $("#mainApp").classList.remove("hidden"); }
 async function startApp() {
   if(!currentUser) {
