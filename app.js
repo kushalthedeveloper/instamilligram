@@ -29,7 +29,7 @@ function setAuthMode(mode) {
   $("#authSubmit").textContent=mode==="login"?"Log in":"Create account";
   $("#authError").textContent="";
 }
-$("#loginTab").onclick=()=>setAuthMode("login");
+$("#loginTab").onclick=()=>setAuthMode("login");\n$("#forgotPassword").onclick=showPasswordRecovery;
 $("#signupTab").onclick=()=>setAuthMode("signup");
 $("#authForm").addEventListener("submit",async e=>{
   e.preventDefault();
@@ -45,7 +45,12 @@ $("#authForm").addEventListener("submit",async e=>{
   } catch(err) { $("#authError").textContent=err.message; }
   finally { button.disabled=false; button.textContent=authMode==="login"?"Log in":"Create account"; }
 });
-function showAuth() { $("#authScreen").classList.remove("hidden"); $("#mainApp").classList.add("hidden"); }
+function showPasswordRecovery() {
+  modal("Reset your password",'<p class="muted">Enter your username. If a verified recovery contact is saved, we will send a one-time code to it.</p><label class="field-label">Username<input id="resetUsername" class="field" autocomplete="username" placeholder="your_username"></label><button id="requestResetCode" class="secondary">Send recovery code</button><div id="resetFields" class="hidden"><label class="field-label">6-digit code<input id="resetCode" class="field" inputmode="numeric" maxlength="6" autocomplete="one-time-code"></label><label class="field-label">New password<input id="resetNewPassword" class="field" type="password" minlength="10" maxlength="72" autocomplete="new-password"></label><button id="confirmPasswordReset" class="primary">Update password</button></div><p id="resetError" class="auth-error" role="alert"></p>');
+  $("#requestResetCode").onclick=async()=>{try{await api("request_password_reset",{username:$("#resetUsername").value.trim()});$("#resetFields").classList.remove("hidden");$("#resetError").textContent="If the account has a verified recovery method and delivery is configured, a code will arrive shortly.";}catch(err){$("#resetError").textContent=err.message;}};
+  $("#confirmPasswordReset").onclick=async()=>{try{await api("reset_password",{username:$("#resetUsername").value.trim(),code:$("#resetCode").value.trim(),new_password:$("#resetNewPassword").value});$("#modal").classList.add("hidden");toast("Password updated. Log in with your new password.");}catch(err){$("#resetError").textContent=err.message;}};
+}
+\nfunction showAuth() { $("#authScreen").classList.remove("hidden"); $("#mainApp").classList.add("hidden"); }
 function showApp() { $("#authScreen").classList.add("hidden"); $("#mainApp").classList.remove("hidden"); }
 async function startApp() {
   if(!currentUser) {
@@ -152,11 +157,26 @@ async function showRequests() {
     $("#requestList").innerHTML=(data.requests||[]).map(r=>{const u=r.app_users||{};return '<div class="suggestion request-row">'+avatar(u)+'<div><b>'+esc(u.username||"member")+'</b><small>Wants to follow you</small></div><button class="link approve-follow" data-id="'+esc(r.follower_id)+'">Approve</button></div>';}).join("")||'<p class="muted">No pending requests.</p>';
   }catch(err){$("#requestList").textContent=err.message;}
 }
-function showProfile() {
-  modal("Your profile",'<div class="profile-edit"><p><b>@'+esc(currentUser.username)+'</b></p><label class="field-label">Display name<input id="profileName" class="field" maxlength="40" value="'+esc(currentUser.display_name||"")+'"></label><label class="field-label">Bio<textarea id="profileBio" class="field" maxlength="160" rows="3">'+esc(currentUser.bio||"")+'</textarea></label><label class="privacy-toggle"><input type="checkbox" id="privateProfile" '+(currentUser.is_private?"checked":"")+'> Private account (recommended)</label><p class="muted small-note">When private, only followers you approve can see your posts.</p><button id="saveProfile" class="primary">Save profile</button><button id="logoutInProfile" class="secondary">Log out</button><p id="profileError" class="auth-error"></p></div>');
+async function showProfile() {
+  modal("Your profile & security",'<div class="profile-edit"><p><b>@'+esc(currentUser.username)+'</b></p><label class="field-label">Display name<input id="profileName" class="field" maxlength="40" value="'+esc(currentUser.display_name||"")+'"></label><label class="field-label">Bio<textarea id="profileBio" class="field" maxlength="160" rows="3">'+esc(currentUser.bio||"")+'</textarea></label><label class="privacy-toggle"><input type="checkbox" id="privateProfile" '+(currentUser.is_private?"checked":"")+'> Private account (recommended)</label><p class="muted small-note">Only approved followers can see your private posts.</p><button id="saveProfile" class="primary">Save profile</button><hr><h3>Account recovery</h3><p id="recoveryStatus" class="muted">Checking recovery method…</p><label class="field-label">Recovery method<select id="recoveryMethod" class="field"><option value="email">Email address</option><option value="phone">Mobile number</option></select></label><label class="field-label">Email or mobile number<input id="recoveryContact" class="field" autocomplete="off" placeholder="name@example.com or +919876543210"></label><button id="sendRecoveryCode" class="secondary">Send verification code</button><div id="recoveryVerifyWrap" class="hidden"><label class="field-label">6-digit verification code<input id="recoveryCode" class="field" inputmode="numeric" maxlength="6" autocomplete="one-time-code"></label><button id="verifyRecoveryCode" class="primary">Verify and save recovery method</button></div><p id="recoveryError" class="auth-error" role="alert"></p><p class="muted small-note">A verified email or phone can be used to reset your password. No OTP is required to sign up or log in. Enter contact details only inside this secure account screen.</p><button id="logoutInProfile" class="secondary">Log out</button></div>');
+  try {
+    const r=await api("get_recovery_status");
+    $("#recoveryStatus").textContent=r.recovery?(r.recovery.method==="email"?"Verified email: ":"Verified phone: ")+r.recovery.masked:"No verified recovery method saved.";
+    if(r.recovery) $("#recoveryMethod").value=r.recovery.method;
+  } catch(err) { $("#recoveryStatus").textContent=err.message; }
   $("#saveProfile").onclick=async()=>{
-    try {const r=await api("update_profile",{display_name:$("#profileName").value,bio:$("#profileBio").value,is_private:$("#privateProfile").checked});currentUser=r.user;renderCurrentUser();$("#modal").classList.add("hidden");toast("Profile updated.");}
-    catch(err){$("#profileError").textContent=err.message;}
+    try {const r=await api("update_profile",{display_name:$("#profileName").value,bio:$("#profileBio").value,is_private:$("#privateProfile").checked});currentUser=r.user;renderCurrentUser();toast("Profile updated.");}
+    catch(err){$("#recoveryError").textContent=err.message;}
+  };
+  $("#sendRecoveryCode").onclick=async()=>{
+    const btn=$("#sendRecoveryCode");btn.disabled=true;$("#recoveryError").textContent="";
+    try {await api("set_recovery_method",{method:$("#recoveryMethod").value,contact:$("#recoveryContact").value.trim()});$("#recoveryVerifyWrap").classList.remove("hidden");toast("Verification code sent.");}
+    catch(err){$("#recoveryError").textContent=err.message;}
+    finally{btn.disabled=false;}
+  };
+  $("#verifyRecoveryCode").onclick=async()=>{
+    try {await api("verify_recovery_method",{code:$("#recoveryCode").value.trim()});$("#recoveryVerifyWrap").classList.add("hidden");$("#recoveryContact").value="";const r=await api("get_recovery_status");$("#recoveryStatus").textContent=r.recovery.method==="email"?"Verified email: "+r.recovery.masked:"Verified phone: "+r.recovery.masked;toast("Recovery method verified.");}
+    catch(err){$("#recoveryError").textContent=err.message;}
   };
   $("#logoutInProfile").onclick=logout;
 }
