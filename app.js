@@ -167,6 +167,8 @@ async function openMessageThread(userId, username) {
 document.addEventListener("click",e=>{
   const open=e.target.closest(".open-conversation");
   if(open) openMessageThread(open.dataset.id,open.dataset.name);
+  const message=e.target.closest(".message-user");
+  if(message) openMessageThread(message.dataset.id,message.dataset.name);
 });
 document.addEventListener("submit",async e=>{
   if(!e.target.matches("#sendMessageForm")) return;
@@ -189,7 +191,7 @@ async function showSearch() {
     const q=input.value.trim(); if(q.length<2){$("#searchResults").innerHTML="";return;}
     try {
       const data=await api("search_users",{query:q});
-      $("#searchResults").innerHTML=(data.users||[]).map(u=>'<div class="suggestion"><div class="avatar">'+esc((u.display_name||u.username).slice(0,1).toUpperCase())+'</div><div><b>'+esc(u.username)+'</b><small>'+esc(u.display_name||"")+(u.is_private?" · Private":"")+'</small></div><button class="link follow-user" data-id="'+esc(u.id)+'">Follow</button></div>').join("")||'<p class="muted">No matching accounts.</p>';
+      $("#searchResults").innerHTML=(data.users||[]).map(u=>'<div class="suggestion"><div class="avatar">'+esc((u.display_name||u.username).slice(0,1).toUpperCase())+'</div><div><b>'+esc(u.username)+'</b><small>'+esc(u.display_name||"")+(u.is_private?" · Private":"")+'</small></div><button class="link follow-user" data-id="'+esc(u.id)+'">Follow</button><button class="link message-user" data-id="'+esc(u.id)+'" data-name="'+esc(u.username)+'">Message</button></div>').join("")||'<p class="muted">No matching accounts.</p>';
     }catch(err){$("#searchResults").innerHTML='<p class="muted">'+esc(err.message)+'</p>';}
   };
 }
